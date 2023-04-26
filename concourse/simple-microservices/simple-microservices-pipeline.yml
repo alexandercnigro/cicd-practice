@@ -1,0 +1,46 @@
+resources:
+- name: simple-microservices-code
+  type: git
+  source:
+    uri: git@github.com:alexandercnigro/simple-microservices.git
+    branch: main
+    private_key: (( simple-microservices-private-key ))
+
+- name: hello-world-docker-image
+  type: docker-image
+  source:
+    email: (( docker-hub-email ))
+    username: (( docker-hub-username ))
+    password: (( docker-hub-password ))
+    repository: (( docker-hub-username ))/concourse-tutorial-hello-world
+
+jobs:
+- name: publish
+  public: true
+  serial: true
+  plan:
+  - get: tutorial
+  - put: hello-world-docker-image
+    params:
+      build: tutorial/tutorials/miscellaneous/docker-images/docker
+
+
+jobs:
+- name: build-cost-service
+  plan:
+  - get: simple-microservices-code
+  - put: cost-svc
+    
+# jobs:
+#   - name: simple-microservices-job
+#     plan:
+#     - task: cost-svc-task
+#       config:
+#         platform: linux
+#         image_resource:
+#           type: docker-image
+#           source:
+#             repository: github
+#         run:
+#           path: echo
+#           args: ["Hello world!"]
