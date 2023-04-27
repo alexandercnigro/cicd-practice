@@ -1,36 +1,54 @@
 resources:
+# Repo with our docker files
 - name: simple-microservices-code
   type: git
   source:
     uri: git@github.com:alexandercnigro/simple-microservices.git
     branch: main
-    private_key: (( simple-microservices-private-key ))
+    private_key: ((simple-microservices-private-key))
 
-- name: hello-world-docker-image
-  type: docker-image
+# Where we will push the image to
+- name: simple-image
+  type: registry-image
+  icon: docker
   source:
-    email: (( docker-hub-email ))
-    username: (( docker-hub-username ))
-    password: (( docker-hub-password ))
-    repository: (( docker-hub-username ))/concourse-tutorial-hello-world
+    repository: ((image-repo-name))/simple-image
+    username: ((registry-username))
+    password: ((registry-password))
 
-jobs:
-- name: publish
-  public: true
-  serial: true
-  plan:
-  - get: tutorial
-  - put: hello-world-docker-image
-    params:
-      build: tutorial/tutorials/miscellaneous/docker-images/docker
-
+# jobs:
+# - name: publish
+#   public: true
+#   serial: true
+#   plan:
+#   - get: tutorial
+#   - put: hello-world-docker-image
+#     params:
+#       build: tutorial/tutorials/miscellaneous/docker-images/docker
 
 jobs:
 - name: build-cost-service
   plan:
-  - get: simple-microservices-code
-  - put: cost-svc
-    
+  - get: simple-microservices-code # pull in simple-microservices code
+  - task: build-image
+    privileged: true # oci-build-task must run in a privileged container
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: concourse/oci-build-task
+      inputs:
+      - name: simple-microservices-code
+      outputs:
+      - name: image
+      params:
+        CONTEXT: simple-microservices-code/costService
+      run: # binary used to build the image
+        path: build
+  - put: simple-image
+    params:
+      image: image/image.tar
 # jobs:
 #   - name: simple-microservices-job
 #     plan:
