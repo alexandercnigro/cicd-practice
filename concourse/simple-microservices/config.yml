@@ -1,0 +1,5 @@
+simple-microservices-private-key: |
+      ADD_PRIVATE_KEY_HERE
+image-repo-name: ADD_IMAGE_REPO_NAME_HERE
+registry-username: ADD_REGISTRY_USERNAME_HERE
+registry-password: ADD_REGISTRY_PASSWORD_HERE
